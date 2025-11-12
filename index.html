@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jelly Soul: Isotype for Subjectivity</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- 使用CDN引入D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+                <h1>Jelly Soul: Isotype for Subjectivity</h1>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Dimension:</label>
+                    <select id="dimension-select">
+                        <option value="experience">Experience</option>
+                        <option value="emotion">Emotion</option>
+                        <option value="topic">Topic</option>
+                        <option value="multidimensional">Multidimensional</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Similarity:</label>
+                    <input type="range" id="similarity-threshold" min="0.5" max="1.0" step="0.05" value="0.95">
+                    <span id="threshold-value">0.95</span>
+                </div>
+                <div class="control-group">
+                    <label>Layout:</label>
+                    <select id="layout-select">
+                        <option value="force">Force-Directed</option>
+                        <option value="cluster">Cluster Circle</option>
+                        <option value="hierarchical">Hierarchical</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="visual-mode-select">Visual Mode:</label>
+                    <select id="visual-mode-select">
+                        <option value="isotype">Generative Art</option>
+                        <option value="simple">Simple Circle</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="cluster-fusion-toggle">Cluster Fusion</label>
+                    <input type="checkbox" id="cluster-fusion-toggle" checked>
+                </div>
+                <button id="reset-view">Reset View</button>
+                <a href="examples/group-visualization-demo.html" target="_blank" style="padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #FFFFFF; text-decoration: none; font-size: 0.875rem; transition: background 0.2s ease; margin-right: 0.5rem;">
+                    Group Demo →
+                </a>
+                <a href="examples/advanced-storytelling-demo.html" target="_blank" style="padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #FFFFFF; text-decoration: none; font-size: 0.875rem; transition: background 0.2s ease;">
+                    Advanced Demo →
+                </a>
+            </div>
+        </header>
+        <main>
+            <div id="visualization-container">
+                <svg id="main-svg"></svg>
+                <canvas id="flow-canvas"></canvas>
+            </div>
+            <aside id="info-panel">
+                <div class="info-panel-header">
+                <h3>Story</h3>
+                    <button id="toggle-panel" class="toggle-btn" title="Collapse/Expand">◀</button>
+                </div>
+                <div id="node-info">
+                    <p style="text-align: center; color: rgba(255, 255, 255, 0.7); padding: 3rem 2rem; font-style: italic; line-height: 1.8;">
+                        Each circle is a person with story<br>
+                        Hover or click to listen
+                    </p>
+                </div>
+                <button id="toggle-panel-collapsed" class="toggle-btn-collapsed" title="Expand">▶</button>
+            </aside>
+        </main>
+    </div>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
+

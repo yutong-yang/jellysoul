@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Storytelling Demo - Jelly Soul</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0A0A0A;
+            color: #FFFFFF;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .example-section {
+            margin-bottom: 4rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .example-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .example-description {
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border-left: 3px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        
+        canvas {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: #0A0A0A;
+            display: block;
+            margin: 1.5rem auto;
+        }
+        
+        .controls {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            min-width: 100px;
+        }
+        
+        .control-group select,
+        .control-group input[type="range"],
+        .control-group input[type="checkbox"] {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #FFFFFF;
+            font-size: 0.875rem;
+        }
+        
+        .control-group input[type="range"] {
+            width: 150px;
+        }
+        
+        .control-group span {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            min-width: 60px;
+        }
+        
+        
+        /* Map container */
+        .map-container {
+            position: relative;
+            margin: 1.5rem auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: #0A0A0A;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            margin: 1.5rem auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: #0A0A0A;
+        }
+        
+        /* Glyph Tooltip Styles */
+        .glyph-tooltip {
+            position: fixed;
+            display: none;
+            background: rgba(20, 20, 20, 0.95);
+            color: #FFFFFF;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            max-width: 300px;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            animation: tooltipFadeIn 0.2s ease-out;
+        }
+        
+        .glyph-tooltip.arrow-above::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(20, 20, 20, 0.95);
+        }
+        
+        .glyph-tooltip.arrow-below::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid rgba(20, 20, 20, 0.95);
+        }
+        
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        canvas {
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h1>Jelly Soul: Advanced Storytelling Demo</h1>
+    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">
+        Pushing the boundaries of Jelly Soul: Real maps, glyph fusion, traditional charts reimagined, 
+        and creative visualizations that showcase the system's true versatility.
+    </p>
+    
+    <!-- Scenario 1: Geographic Map with Glyphs -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 1: Geographic Narrative Map</h2>
+        <p class="example-description">
+            <strong>Story:</strong> Place glyphs on a real map! Each location becomes a landscape of stories. 
+            Glyphs cluster around cities and regions, showing how geography shapes narrative. Zoom in to see 
+            individual stories, zoom out to see regional patterns.
+        </p>
+        <div class="info-box">
+            "Every place has its stories. On this map, each glyph represents a person's narrative at a specific 
+            location. Cities glow with clusters of stories, while rural areas show scattered individual voices. 
+            The map becomes a living landscape of human experience, where geography and narrative intertwine."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Map Type:</label>
+                <select id="map-type-1">
+                    <option value="china">China</option>
+                    <option value="usa">USA</option>
+                    <option value="world">World</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Glyph Density:</label>
+                <input type="range" id="density-1" min="0.5" max="2.0" step="0.1" value="1.0">
+                <span id="density-value-1">1.0</span>
+            </div>
+        </div>
+        <div class="map-container">
+            <canvas id="canvas-map" width="1400" height="800"></canvas>
+        </div>
+        <div class="info-box">
+            <strong>Insights:</strong> Geographic clustering reveals regional narrative patterns. Urban centers 
+            show dense, diverse clusters, while rural areas may have more homogeneous narratives. The map 
+            transforms abstract data into a spatial story of human experience.
+        </div>
+    </div>
+    
+    <!-- Scenario 2: Glyph Fusion - Multiple Glyphs Merged -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 2: Glyph Fusion - The Mosaic of Many</h2>
+        <p class="example-description">
+            <strong>Story:</strong> When many individuals come together, their unique glyphs can fuse into a 
+            single, multi-colored, complex glyph. This fusion glyph represents the collective while preserving 
+            traces of individual diversity. The larger the group, the more complex and colorful the fusion.
+        </p>
+        <div class="info-box">
+            "Unity in diversity. Each fusion glyph is a mosaic—a single shape that contains the colors, patterns, 
+            and characteristics of many individuals. Like a kaleidoscope, the fusion reveals how individual 
+            uniqueness contributes to collective beauty. The more diverse the group, the more vibrant the fusion."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Fusion Size:</label>
+                <input type="range" id="fusion-size-2" min="50" max="200" step="10" value="100">
+                <span id="fusion-size-value-2">100</span>
+            </div>
+            <div class="control-group">
+                <label>Fusion Style:</label>
+                <select id="fusion-style-2">
+                    <option value="mosaic">Mosaic</option>
+                    <option value="layered">Layered</option>
+                    <option value="radial">Radial Fusion</option>
+                    <option value="blend">Color Blend</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Group Count:</label>
+                <input type="range" id="group-count-2" min="3" max="10" step="1" value="5">
+                <span id="group-count-value-2">5</span>
+            </div>
+        </div>
+        <canvas id="canvas-fusion" width="1400" height="600"></canvas>
+        <div class="info-box">
+            <strong>Insights:</strong> Fusion glyphs show how groups can be represented as unified entities while 
+            maintaining visual traces of individual diversity. Different fusion styles reveal different aspects 
+            of collective identity—blending, layering, or preserving distinct elements.
+        </div>
+    </div>
+    
+    <!-- Scenario 3: Bar Chart with Glyphs -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 3: Bar Chart Reimagined - Glyphs as Bars</h2>
+        <p class="example-description">
+            <strong>Story:</strong> Traditional bar charts show numbers. But what if each bar was made of 
+            individual glyphs? The height shows quantity, but the glyphs show diversity. Each bar becomes a 
+            vertical mosaic of unique individuals, not just a number.
+        </p>
+        <div class="info-box">
+            "Numbers tell part of the story, but glyphs tell the whole story. In this reimagined bar chart, 
+            each bar is a stack of unique glyphs. The height shows quantity, but the colors and patterns show 
+            diversity. Compare not just the heights, but the richness of each group's composition."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Bar Style:</label>
+                <select id="bar-style-3">
+                    <option value="stacked">Stacked Glyphs</option>
+                    <option value="packed">Packed Glyphs</option>
+                    <option value="flowing">Flowing Bars</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-3" min="5" max="15" step="5" value="10">
+                <span id="unit-size-value-3">10</span>
+            </div>
+            <div class="control-group">
+                <label>Show Numbers:</label>
+                <input type="checkbox" id="show-numbers-3" checked>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="canvas-bar-chart" width="1400" height="450"></canvas>
+        </div>
+        <div class="info-box">
+            <strong>Insights:</strong> This visualization combines quantitative comparison (bar heights) with 
+            qualitative diversity (glyph variety). You can see not just which group is larger, but which group 
+            is more diverse, more colorful, more complex.
+        </div>
+    </div>
+    
+    <!-- Scenario 4: Pie Chart with Glyphs -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 4: Pie Chart Reimagined - Glyphs in Slices</h2>
+        <p class="example-description">
+            <strong>Story:</strong> A pie chart shows proportions, but what if each slice was filled with 
+            diverse glyphs? The slice size shows proportion, but the glyphs show the richness and diversity 
+            within each category. Each slice becomes a colorful mosaic of individual stories.
+        </p>
+        <div class="info-box">
+            "Proportions matter, but so does what fills those proportions. In this pie chart, each slice is 
+            a landscape of unique glyphs. The slice size shows the share, but the glyphs show the character. 
+            A small slice can be incredibly diverse, while a large slice might be more homogeneous."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Slice Style:</label>
+                <select id="slice-style-4">
+                    <option value="radial">Radial Arrangement</option>
+                    <option value="packed" selected>Packed Glyphs</option>
+                    <option value="flowing">Flowing Pattern</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-4" min="5" max="15" step="5" value="10">
+                <span id="unit-size-value-4">10</span>
+            </div>
+            <div class="control-group">
+                <label>Show Percentages:</label>
+                <input type="checkbox" id="show-percentages-4" checked>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="canvas-pie-chart" width="1400" height="700"></canvas>
+        </div>
+        <div class="info-box">
+            <strong>Insights:</strong> The pie chart becomes a celebration of diversity within proportions. 
+            Each slice tells a story not just of size, but of composition. Notice how some slices shimmer 
+            with variety while others show more uniform patterns.
+        </div>
+    </div>
+    
+    <!-- Scenario 5: Line Chart with Glyphs -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 5: Line Chart Reimagined - Glyphs Along Time</h2>
+        <p class="example-description">
+            <strong>Story:</strong> A line chart shows trends over time. But what if each point was a cluster 
+            of glyphs? The line shows the trend, but the glyphs at each point show who makes up that moment. 
+            Watch how the composition changes along the timeline.
+        </p>
+        <div class="info-box">
+            "Time flows, and with it, the composition of our stories. This line chart shows not just the 
+            trend, but the people who create it. At each point in time, a cluster of glyphs reveals the 
+            diversity of that moment. As the line moves, watch how the glyphs evolve—some colors fade, 
+            others emerge, creating a narrative of change."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Time Points:</label>
+                <input type="range" id="time-points-5" min="5" max="15" step="1" value="10">
+                <span id="time-points-value-5">10</span>
+            </div>
+            <div class="control-group">
+                <label>Cluster Size:</label>
+                <input type="range" id="cluster-size-5" min="20" max="80" step="10" value="40">
+                <span id="cluster-size-value-5">40</span>
+            </div>
+            <div class="control-group">
+                <label>Show Trend Line:</label>
+                <input type="checkbox" id="show-trend-5" checked>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="canvas-line-chart" width="1400" height="600"></canvas>
+        </div>
+        <div class="info-box">
+            <strong>Insights:</strong> The line chart reveals both quantitative trends and qualitative changes. 
+            The line shows the direction, but the glyph clusters show the composition. Notice how diversity 
+            might increase or decrease over time, independent of the overall trend.
+        </div>
+    </div>
+    
+    <!-- Scenario 6: Heatmap with Glyphs -->
+    <div class="example-section">
+        <h2 class="example-title">Scenario 6: Heatmap Reimagined - Glyph Density Map</h2>
+        <p class="example-description">
+            <strong>Story:</strong> A heatmap shows intensity through color. But what if each cell was filled 
+            with glyphs? The density shows intensity, but the glyph variety shows diversity. Hot spots become 
+            vibrant mosaics of individual stories.
+        </p>
+        <div class="info-box">
+            "Intensity and diversity are not the same. In this heatmap, each cell is a microcosm of stories. 
+            Hot spots glow not just with density, but with the vibrant colors of diverse glyphs. Cool areas 
+            might be sparse, but they can still be rich in variety. The map becomes a landscape of both 
+            quantity and quality."
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Grid Size:</label>
+                <input type="range" id="grid-size-6" min="5" max="12" step="1" value="8">
+                <span id="grid-size-value-6">8</span>
+            </div>
+            <div class="control-group">
+                <label>Glyph Size:</label>
+                <input type="range" id="glyph-size-6" min="8" max="20" step="2" value="12">
+                <span id="glyph-size-value-6">12</span>
+            </div>
+            <div class="control-group">
+                <label>Show Intensity:</label>
+                <input type="checkbox" id="show-intensity-6" checked>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="canvas-heatmap" width="1400" height="700"></canvas>
+        </div>
+        <div class="info-box">
+            <strong>Insights:</strong> The heatmap reveals patterns in both density and diversity. Some regions 
+            are hot and diverse (many unique glyphs), others are hot but homogeneous (many similar glyphs). 
+            This dual encoding reveals complex patterns in the data.
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import the necessary modules
+        import { GroupIsotypeRenderer } from '../src/groupIsotypeRenderer.js';
+        import { IsotypeRenderer } from '../src/isotypeRenderer.js';
+        import { DataLoader } from '../src/dataLoader.js';
+        
+        // Initialize all canvas renderers
+        const canvases = {
+            map: { canvas: document.getElementById('canvas-map'), ctx: null, renderer: null },
+            fusion: { canvas: document.getElementById('canvas-fusion'), ctx: null, renderer: null },
+            barChart: { canvas: document.getElementById('canvas-bar-chart'), ctx: null, renderer: null },
+            pieChart: { canvas: document.getElementById('canvas-pie-chart'), ctx: null, renderer: null },
+            lineChart: { canvas: document.getElementById('canvas-line-chart'), ctx: null, renderer: null },
+            heatmap: { canvas: document.getElementById('canvas-heatmap'), ctx: null, renderer: null }
+        };
+        
+        // Initialize renderers
+        Object.keys(canvases).forEach(key => {
+            canvases[key].ctx = canvases[key].canvas.getContext('2d');
+            canvases[key].renderer = new GroupIsotypeRenderer(canvases[key].canvas, canvases[key].ctx);
+        });
+        
+        const dataLoader = new DataLoader();
+        let allParticipants = [];
+        
+        // Helper: Create mock geographic data based on map type
+        function createGeographicData(participants, mapType = 'china') {
+            let cities = {};
+            
+            if (mapType === 'china') {
+                // China cities with accurate relative coordinates
+                // Coordinates normalized (0-1) relative to canvas, matching the map outline
+                cities = {
+                    'Beijing': { x: 0.5, y: 0.2, count: 50 },       // 北京 - 北部偏东，靠近地图中心偏上
+                    'Shanghai': { x: 0.8, y: 0.4, count: 45 },      // 上海 - 东部沿海中部
+                    'Guangzhou': { x: 0.75, y: 0.65, count: 40 },   // 广州 - 南部偏东
+                    'Shenzhen': { x: 0.77, y: 0.7, count: 35 },     // 深圳 - 广州以南，更靠海
+                    'Chengdu': { x: 0.3, y: 0.5, count: 30 },      // 成都 - 西南部，偏西
+                    'Hangzhou': { x: 0.78, y: 0.42, count: 25 },    // 杭州 - 上海附近，稍偏南
+                    'Wuhan': { x: 0.55, y: 0.48, count: 20 },      // 武汉 - 中部，长江中游
+                    'Xi\'an': { x: 0.4, y: 0.35, count: 15 }      // 西安 - 中西部，偏北
+                };
+            } else if (mapType === 'usa') {
+                // USA cities with approximate coordinates
+                cities = {
+                    'New York': { x: 0.75, y: 0.3, count: 50 },
+                    'Los Angeles': { x: 0.15, y: 0.5, count: 45 },
+                    'Chicago': { x: 0.5, y: 0.35, count: 40 },
+                    'Houston': { x: 0.45, y: 0.6, count: 35 },
+                    'Phoenix': { x: 0.2, y: 0.55, count: 30 },
+                    'Philadelphia': { x: 0.72, y: 0.32, count: 25 },
+                    'San Antonio': { x: 0.4, y: 0.65, count: 20 },
+                    'San Diego': { x: 0.12, y: 0.52, count: 15 }
+                };
+            } else if (mapType === 'world') {
+                // World cities with approximate coordinates, including Chinese cities
+                cities = {
+                    'Tokyo': { x: 0.85, y: 0.35, count: 50 },
+                    'New York': { x: 0.25, y: 0.3, count: 45 },
+                    'Beijing': { x: 0.75, y: 0.3, count: 45 },      // 北京 - 加入世界地图
+                    'Shanghai': { x: 0.78, y: 0.4, count: 40 },     // 上海 - 加入世界地图
+                    'London': { x: 0.48, y: 0.25, count: 40 },
+                    'Paris': { x: 0.5, y: 0.28, count: 35 },
+                    'Guangzhou': { x: 0.76, y: 0.55, count: 30 },   // 广州 - 加入世界地图
+                    'Sydney': { x: 0.88, y: 0.75, count: 30 },
+                    'Mumbai': { x: 0.65, y: 0.5, count: 25 },
+                    'São Paulo': { x: 0.3, y: 0.7, count: 20 },
+                    'Cairo': { x: 0.55, y: 0.45, count: 15 }
+                };
+            }
+            
+            // Calculate total desired count
+            const totalDesired = Object.values(cities).reduce((sum, city) => sum + city.count, 0);
+            
+            // If we have fewer participants than desired, distribute proportionally
+            const availableCount = participants.length;
+            const scaleFactor = availableCount < totalDesired ? availableCount / totalDesired : 1;
+            
+            const data = [];
+            let participantIndex = 0;
+            
+            // Distribute participants to cities proportionally
+            // Use diverse counts based on the original city.count values
+            // Ensure each city has a different, meaningful count
+            const cityEntries = Object.entries(cities);
+            const maxOriginalCount = Math.max(...cityEntries.map(([_, info]) => info.count));
+            const minOriginalCount = Math.min(...cityEntries.map(([_, info]) => info.count));
+            
+            Object.entries(cities).forEach(([city, info]) => {
+                // Calculate how many participants this city should get
+                // Maintain relative proportions, but ensure minimum diversity
+                let cityCount = Math.floor(info.count * scaleFactor);
+                
+                // If scaled count is too small, create diverse counts based on relative position
+                if (cityCount < 5) {
+                    // Map original count to a range of 5-15 to ensure diversity
+                    const normalizedCount = (info.count - minOriginalCount) / (maxOriginalCount - minOriginalCount || 1);
+                    cityCount = Math.floor(5 + normalizedCount * 10); // Range: 5-15
+                } else {
+                    // For larger counts, maintain the scaled value but ensure it's meaningful
+                    cityCount = Math.max(5, cityCount);
+                }
+                
+                for (let i = 0; i < cityCount; i++) {
+                    // Use modulo to cycle through participants, ensuring we always have data
+                    const participant = participants[participantIndex % participants.length];
+                    // Create a copy to avoid reference issues
+                    const participantCopy = {
+                        ...participant,
+                        city: city,
+                        x: info.x,
+                        y: info.y
+                    };
+                    data.push(participantCopy);
+                    participantIndex++;
+                }
+            });
+            
+            // Update city counts to reflect actual distribution
+            const actualCities = {};
+            Object.entries(cities).forEach(([city, info]) => {
+                const cityData = data.filter(d => d.city === city);
+                actualCities[city] = {
+                    ...info,
+                    count: cityData.length // Use actual count from data
+                };
+            });
+            
+            return { cities: actualCities, data };
+        }
+        
+        // Render Map
+        function renderMap() {
+            const mapType = document.getElementById('map-type-1').value;
+            const density = parseFloat(document.getElementById('density-1').value);
+            
+            const { canvas, ctx, renderer } = canvases.map;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Draw map outline based on map type
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            if (mapType === 'china') {
+                // Simplified China outline - more accurate shape
+                // China is roughly rectangular, wider in the north, tapering in the south
+                // Starting from northwest (Xinjiang area)
+                ctx.moveTo(canvas.width * 0.12, canvas.height * 0.2);   // Northwest corner
+                ctx.lineTo(canvas.width * 0.2, canvas.height * 0.15);   // North border (west)
+                ctx.lineTo(canvas.width * 0.5, canvas.height * 0.12);  // North border (central)
+                ctx.lineTo(canvas.width * 0.75, canvas.height * 0.15);  // Northeast (Beijing area)
+                ctx.lineTo(canvas.width * 0.82, canvas.height * 0.25);  // East coast (north)
+                ctx.lineTo(canvas.width * 0.85, canvas.height * 0.45);  // East coast (central, Shanghai area)
+                ctx.lineTo(canvas.width * 0.82, canvas.height * 0.65);  // Southeast coast (Guangzhou area)
+                ctx.lineTo(canvas.width * 0.75, canvas.height * 0.72);  // South coast
+                ctx.lineTo(canvas.width * 0.6, canvas.height * 0.75);   // Southwest (Yunnan area)
+                ctx.lineTo(canvas.width * 0.35, canvas.height * 0.72);  // Southwest interior
+                ctx.lineTo(canvas.width * 0.2, canvas.height * 0.65);   // West border (south)
+                ctx.lineTo(canvas.width * 0.15, canvas.height * 0.5);   // West border (central, Tibet)
+                ctx.lineTo(canvas.width * 0.12, canvas.height * 0.35);  // West border (north)
+                ctx.closePath();
+            } else if (mapType === 'usa') {
+                // Simplified USA outline
+                ctx.moveTo(canvas.width * 0.1, canvas.height * 0.25);
+                ctx.lineTo(canvas.width * 0.85, canvas.height * 0.2);
+                ctx.lineTo(canvas.width * 0.9, canvas.height * 0.35);
+                ctx.lineTo(canvas.width * 0.85, canvas.height * 0.7);
+                ctx.lineTo(canvas.width * 0.8, canvas.height * 0.75);
+                ctx.lineTo(canvas.width * 0.15, canvas.height * 0.7);
+                ctx.lineTo(canvas.width * 0.1, canvas.height * 0.5);
+                ctx.closePath();
+            } else if (mapType === 'world') {
+                // Simplified world map (continents)
+                // North America
+                ctx.moveTo(canvas.width * 0.15, canvas.height * 0.25);
+                ctx.lineTo(canvas.width * 0.4, canvas.height * 0.2);
+                ctx.lineTo(canvas.width * 0.45, canvas.height * 0.5);
+                ctx.lineTo(canvas.width * 0.2, canvas.height * 0.6);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                // Europe
+                ctx.moveTo(canvas.width * 0.45, canvas.height * 0.2);
+                ctx.lineTo(canvas.width * 0.55, canvas.height * 0.18);
+                ctx.lineTo(canvas.width * 0.58, canvas.height * 0.35);
+                ctx.lineTo(canvas.width * 0.48, canvas.height * 0.4);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                // Asia
+                ctx.moveTo(canvas.width * 0.6, canvas.height * 0.2);
+                ctx.lineTo(canvas.width * 0.9, canvas.height * 0.15);
+                ctx.lineTo(canvas.width * 0.92, canvas.height * 0.5);
+                ctx.lineTo(canvas.width * 0.65, canvas.height * 0.55);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                // South America
+                ctx.moveTo(canvas.width * 0.25, canvas.height * 0.6);
+                ctx.lineTo(canvas.width * 0.35, canvas.height * 0.58);
+                ctx.lineTo(canvas.width * 0.38, canvas.height * 0.85);
+                ctx.lineTo(canvas.width * 0.28, canvas.height * 0.88);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                // Africa
+                ctx.moveTo(canvas.width * 0.5, canvas.height * 0.4);
+                ctx.lineTo(canvas.width * 0.6, canvas.height * 0.38);
+                ctx.lineTo(canvas.width * 0.62, canvas.height * 0.75);
+                ctx.lineTo(canvas.width * 0.52, canvas.height * 0.78);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                // Australia
+                ctx.moveTo(canvas.width * 0.85, canvas.height * 0.7);
+                ctx.lineTo(canvas.width * 0.92, canvas.height * 0.68);
+                ctx.lineTo(canvas.width * 0.94, canvas.height * 0.8);
+                ctx.lineTo(canvas.width * 0.87, canvas.height * 0.82);
+                ctx.closePath();
+            }
+            
+            ctx.stroke();
+            
+            const geoData = createGeographicData(allParticipants, mapType);
+            
+            // Render glyphs at city locations
+            // Use a fixed seed for random to ensure consistent positions (no path shadows)
+            let randomSeed = 0;
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            geoData.data.forEach((participant, i) => {
+                const x = participant.x * canvas.width;
+                const y = participant.y * canvas.height;
+                
+                // Add some random variation around city center (using seeded random for consistency)
+                const variation = 30 * density;
+                const finalX = x + (seededRandom() - 0.5) * variation;
+                const finalY = y + (seededRandom() - 0.5) * variation;
+                
+                renderer.isotypeRenderer.renderIsotype(participant, finalX, finalY, false);
+                
+                const quote = renderer.extractQuote(participant);
+                renderer.glyphPositions.push({
+                    x: finalX,
+                    y: finalY,
+                    originalX: finalX,
+                    originalY: finalY,
+                    sample: participant,
+                    quote: quote,
+                    isJumping: false
+                });
+            });
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+            
+            // Draw city labels with counts
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            Object.entries(geoData.cities).forEach(([city, info]) => {
+                const x = info.x * canvas.width;
+                const y = info.y * canvas.height;
+                
+                // Draw city name
+                ctx.fillText(city, x + 20, y - 10);
+                
+                // Draw count (same style as other scenarios)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillText(`${info.count}`, x + 20, y + 8);
+                
+                // Reset style for next iteration
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            });
+        }
+        
+        // Render Fusion Glyphs
+        function renderFusion() {
+            const fusionSize = parseInt(document.getElementById('fusion-size-2').value);
+            const fusionStyle = document.getElementById('fusion-style-2').value;
+            const groupCount = parseInt(document.getElementById('group-count-value-2').textContent);
+            
+            const { canvas, ctx, renderer } = canvases.fusion;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Seeded random for consistent data
+            let randomSeed = 56789; // Fixed seed for fusion
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            // Create groups
+            const groupsPerRow = Math.ceil(Math.sqrt(groupCount));
+            const spacing = canvas.width / (groupsPerRow + 1);
+            const startY = canvas.height / 2;
+            
+            // Track used participant indices to ensure diversity across groups
+            let globalParticipantOffset = 0;
+            
+            let groupIndex = 0;
+            for (let row = 0; row < Math.ceil(groupCount / groupsPerRow); row++) {
+                for (let col = 0; col < groupsPerRow && groupIndex < groupCount; col++) {
+                    const centerX = spacing * (col + 1);
+                    const centerY = startY + (row - Math.floor(groupCount / groupsPerRow) / 2) * 200;
+                    
+                    // Get samples for this fusion (using seeded random for consistency)
+                    // More diverse group sizes: 5-25 for more visible differences
+                    const samplesPerGroup = 5 + Math.floor(seededRandom() * 20);
+                    const baseOffset = Math.floor(seededRandom() * 30);
+                    const startIdx = (globalParticipantOffset + baseOffset + groupIndex * 12) % allParticipants.length;
+                    const samples = [];
+                    for (let j = 0; j < samplesPerGroup; j++) {
+                        samples.push(allParticipants[(startIdx + j) % allParticipants.length]);
+                    }
+                    globalParticipantOffset += samplesPerGroup;
+                    
+                    // Calculate dynamic size based on sample count
+                    // Base size from slider, but scale based on sample count (5-25 range)
+                    const minSamples = 5;
+                    const maxSamples = 25;
+                    const sizeMultiplier = 0.6 + (samplesPerGroup - minSamples) / (maxSamples - minSamples) * 0.8; // Range: 0.6-1.4
+                    const dynamicSize = fusionSize * sizeMultiplier;
+                    
+                    // Render fusion glyph with dynamic size
+                    renderFusionGlyph(ctx, renderer.isotypeRenderer, centerX, centerY, dynamicSize, samples, fusionStyle, renderer);
+                    
+                    // Draw count label below the fusion glyph
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${samplesPerGroup}`, centerX, centerY + dynamicSize + 20);
+                    ctx.textAlign = 'left';
+                    
+                    groupIndex++;
+                }
+            }
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+        }
+        
+        // Helper: Render a fusion glyph (multiple glyphs merged)
+        function renderFusionGlyph(ctx, isotypeRenderer, x, y, size, samples, style, renderer = null) {
+            ctx.save();
+            
+            if (style === 'blend') {
+                // Blend colors from all samples - soft, gentle color rings like in main visualization
+                const colors = samples.map(s => {
+                    const color = s.visual_properties?.color || '#FF006E';
+                    return color.startsWith('#') ? color : `#${color}`;
+                }).filter(c => /^#[0-9A-Fa-f]{6}$/.test(c));
+                
+                if (colors.length === 0) {
+                    colors.push('#FF006E');
+                }
+                
+                // Helper: Add alpha to hex color
+                const addAlpha = (hexColor, alpha) => {
+                    const hex = hexColor.replace('#', '');
+                    const r = parseInt(hex.substr(0, 2), 16);
+                    const g = parseInt(hex.substr(2, 2), 16);
+                    const b = parseInt(hex.substr(4, 2), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                };
+                
+                // Create soft, gentle radial gradient with low opacity (like main visualization)
+                const baseOpacity = 0.4; // Base opacity like clusterFusion
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+                
+                // Use multiple colors with decreasing opacity from center to edge
+                // Similar to clusterFusion.js drawFusionShape
+                if (colors.length === 1) {
+                    // Single color: soft fade from center to edge
+                    gradient.addColorStop(0, addAlpha(colors[0], baseOpacity * 0.6));
+                    gradient.addColorStop(0.5, addAlpha(colors[0], baseOpacity * 0.4));
+                    gradient.addColorStop(1, addAlpha(colors[0], baseOpacity * 0.15));
+                } else if (colors.length === 2) {
+                    // Two colors: blend from center to edge
+                    gradient.addColorStop(0, addAlpha(colors[0], baseOpacity * 0.6));
+                    gradient.addColorStop(0.5, addAlpha(colors[1], baseOpacity * 0.4));
+                    gradient.addColorStop(1, addAlpha(colors[1], baseOpacity * 0.15));
+                } else {
+                    // Multiple colors: create soft color rings
+                    const numStops = Math.min(5, colors.length);
+                    for (let i = 0; i < numStops; i++) {
+                        const stop = i / (numStops - 1);
+                        const colorIndex = Math.floor((colors.length - 1) * stop);
+                        const color = colors[colorIndex];
+                        // Opacity decreases from center (0.6) to edge (0.15)
+                        const stopOpacity = baseOpacity * (0.6 - stop * 0.45);
+                        gradient.addColorStop(stop, addAlpha(color, stopOpacity));
+                    }
+                }
+                
+                // Draw soft color ring with glow effect
+                ctx.save();
+                ctx.shadowBlur = size * 0.3;
+                ctx.shadowColor = colors[0];
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Draw individual glyphs in a soft pattern around the edge
+                const glyphsToShow = Math.min(samples.length, 10);
+                samples.slice(0, glyphsToShow).forEach((sample, i) => {
+                    const angle = (Math.PI * 2 * i) / glyphsToShow;
+                    const radius = size * 0.65;
+                    const glyphX = x + Math.cos(angle) * radius;
+                    const glyphY = y + Math.sin(angle) * radius;
+                    
+                    // Make glyphs smaller and with reduced opacity for soft effect
+                    const originalSize = sample.visual_properties?.size || 10;
+                    const originalOpacity = sample.visual_properties?.opacity || 0.8;
+                    sample.visual_properties = { 
+                        ...sample.visual_properties, 
+                        size: originalSize * 0.6,
+                        opacity: originalOpacity * 0.7
+                    };
+                    isotypeRenderer.renderIsotype(sample, glyphX, glyphY, false);
+                    sample.visual_properties.size = originalSize;
+                    sample.visual_properties.opacity = originalOpacity;
+                    
+                    // Record position for interaction
+                    if (renderer) {
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: glyphX,
+                            y: glyphY,
+                            originalX: glyphX,
+                            originalY: glyphY,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    }
+                });
+                
+            } else if (style === 'layered') {
+                // Layer glyphs with transparency
+                samples.slice(0, Math.min(samples.length, 6)).forEach((sample, i) => {
+                    ctx.globalAlpha = 0.3 + (i / samples.length) * 0.4;
+                    const offset = (i - samples.length / 2) * 5;
+                    const glyphX = x + offset;
+                    const glyphY = y + offset;
+                    isotypeRenderer.renderIsotype(sample, glyphX, glyphY, false);
+                    
+                    // Record position for interaction
+                    if (renderer) {
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: glyphX,
+                            y: glyphY,
+                            originalX: glyphX,
+                            originalY: glyphY,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    }
+                });
+                ctx.globalAlpha = 1.0;
+                
+            } else if (style === 'mosaic') {
+                // Arrange glyphs in a mosaic pattern
+                const cols = Math.ceil(Math.sqrt(samples.length));
+                const glyphSize = size / cols;
+                samples.forEach((sample, i) => {
+                    const row = Math.floor(i / cols);
+                    const col = i % cols;
+                    const glyphX = x - size/2 + col * glyphSize + glyphSize/2;
+                    const glyphY = y - size/2 + row * glyphSize + glyphSize/2;
+                    const originalSize = sample.visual_properties?.size || 10;
+                    sample.visual_properties = { ...sample.visual_properties, size: glyphSize * 0.8 };
+                    isotypeRenderer.renderIsotype(sample, glyphX, glyphY, false);
+                    sample.visual_properties.size = originalSize;
+                    
+                    // Record position for interaction
+                    if (renderer) {
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: glyphX,
+                            y: glyphY,
+                            originalX: glyphX,
+                            originalY: glyphY,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    }
+                });
+                
+            } else if (style === 'radial') {
+                // Radial arrangement with center fusion
+                const centerSample = samples[0];
+                isotypeRenderer.renderIsotype(centerSample, x, y, false);
+                
+                // Record center glyph position
+                if (renderer) {
+                    const quote = renderer.extractQuote(centerSample);
+                    renderer.glyphPositions.push({
+                        x: x,
+                        y: y,
+                        originalX: x,
+                        originalY: y,
+                        sample: centerSample,
+                        quote: quote,
+                        isJumping: false
+                    });
+                }
+                
+                samples.slice(1).forEach((sample, i) => {
+                    const angle = (Math.PI * 2 * i) / (samples.length - 1);
+                    const radius = size * 0.6;
+                    const glyphX = x + Math.cos(angle) * radius;
+                    const glyphY = y + Math.sin(angle) * radius;
+                    isotypeRenderer.renderIsotype(sample, glyphX, glyphY, false);
+                    
+                    // Record position for interaction
+                    if (renderer) {
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: glyphX,
+                            y: glyphY,
+                            originalX: glyphX,
+                            originalY: glyphY,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    }
+                });
+            }
+            
+            ctx.restore();
+        }
+        
+        // Helper: Blend multiple colors
+        function blendColors(colors) {
+            if (!colors || colors.length === 0) {
+                return '#FF006E'; // Default color
+            }
+            
+            const hexToRgb = (hex) => {
+                if (!hex || typeof hex !== 'string') {
+                    return { r: 255, g: 0, b: 110 }; // Default pink
+                }
+                const cleanHex = hex.replace("#", "");
+                if (cleanHex.length !== 6) {
+                    return { r: 255, g: 0, b: 110 }; // Default pink
+                }
+                const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(cleanHex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 255, g: 0, b: 110 };
+            };
+            
+            const rgbToHex = (r, g, b) => {
+                const newR = Math.max(0, Math.min(255, Math.round(r)));
+                const newG = Math.max(0, Math.min(255, Math.round(g)));
+                const newB = Math.max(0, Math.min(255, Math.round(b)));
+                return "#" + [newR, newG, newB].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? "0" + hex : hex;
+                }).join("");
+            };
+            
+            const validColors = colors.filter(c => c && typeof c === 'string' && /^#?[0-9A-Fa-f]{6}$/.test(c.replace('#', '')));
+            if (validColors.length === 0) {
+                return '#FF006E'; // Default if no valid colors
+            }
+            
+            const rgb = validColors.reduce((acc, color) => {
+                const c = hexToRgb(color);
+                acc.r += c.r;
+                acc.g += c.g;
+                acc.b += c.b;
+                return acc;
+            }, { r: 0, g: 0, b: 0 });
+            
+            return rgbToHex(
+                rgb.r / validColors.length,
+                rgb.g / validColors.length,
+                rgb.b / validColors.length
+            );
+        }
+        
+        // Helper: Adjust color brightness
+        function adjustColor(hex, amount) {
+            if (!hex || typeof hex !== 'string') {
+                return '#FF006E'; // Default color if invalid
+            }
+            
+            // Remove # if present
+            const cleanHex = hex.replace("#", "");
+            if (cleanHex.length !== 6) {
+                return '#FF006E'; // Default color if invalid format
+            }
+            
+            const num = parseInt(cleanHex, 16);
+            if (isNaN(num)) {
+                return '#FF006E'; // Default color if parse fails
+            }
+            
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount * 255));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount * 255));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount * 255));
+            
+            // Ensure proper hex formatting
+            const newR = Math.round(r).toString(16).padStart(2, '0');
+            const newG = Math.round(g).toString(16).padStart(2, '0');
+            const newB = Math.round(b).toString(16).padStart(2, '0');
+            
+            return `#${newR}${newG}${newB}`;
+        }
+        
+        // Render Bar Chart
+        function renderBarChart() {
+            const barStyle = document.getElementById('bar-style-3').value;
+            const unitSize = parseInt(document.getElementById('unit-size-3').value);
+            const showNumbers = document.getElementById('show-numbers-3').checked;
+            
+            const { canvas, ctx, renderer } = canvases.barChart;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Seeded random for consistent data
+            let randomSeed = 12345; // Fixed seed for bar chart
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            // Create groups with different counts - more diverse
+            const categories = ['Category A', 'Category B', 'Category C', 'Category D', 'Category E'];
+            const counts = [180, 140, 110, 85, 55]; // More diverse range
+            const maxCount = Math.max(...counts);
+            
+            const barWidth = 200;
+            const spacing = (canvas.width - 100) / categories.length;
+            const baseY = canvas.height - 60; // Bottom of bars (reduced from 100)
+            const topMargin = 30; // Top margin (reduced from 50)
+            const availableHeight = canvas.height - baseY - topMargin; // Available height for bars
+            
+            // Track used participant indices to ensure diversity across bars
+            let globalParticipantOffset = 0;
+            
+            categories.forEach((category, i) => {
+                const count = counts[i];
+                const barHeight = (count / maxCount) * availableHeight; // Height of this bar
+                const barTopY = baseY - barHeight; // Top of the bar
+                const barX = 50 + i * spacing + (spacing - barWidth) / 2;
+                
+                // Get samples for this category (using seeded random for consistency)
+                // Use different offsets for each category to ensure diversity
+                const glyphCount = Math.ceil(count / unitSize);
+                const baseOffset = Math.floor(seededRandom() * 50); // Vary starting point
+                const startIdx = (globalParticipantOffset + baseOffset + i * 20) % allParticipants.length;
+                const samples = [];
+                for (let j = 0; j < glyphCount * 2; j++) {
+                    samples.push(allParticipants[(startIdx + j) % allParticipants.length]);
+                }
+                const diverseSamples = renderer.selectDiverseSamples(samples, glyphCount, 'representative');
+                globalParticipantOffset += glyphCount * 2;
+                
+                // Render glyphs in bar
+                if (barStyle === 'stacked') {
+                    // Stacked: glyphs stacked vertically, organized in rows
+                    const glyphSize = 12;
+                    const glyphSpacing = glyphSize * 1.2;
+                    const glyphsPerRow = Math.floor(barWidth / glyphSpacing);
+                    const rowsNeeded = Math.ceil(glyphCount / glyphsPerRow);
+                    const actualBarHeight = rowsNeeded * glyphSpacing;
+                    
+                    // Center the glyphs vertically within the bar
+                    const startY = Math.max(barTopY, baseY - actualBarHeight);
+                    let currentY = startY;
+                    let row = 0;
+                    
+                    diverseSamples.forEach((sample, j) => {
+                        if (j > 0 && j % glyphsPerRow === 0) {
+                            row++;
+                            currentY = startY + row * glyphSpacing;
+                        }
+                        const x = barX + (j % glyphsPerRow) * glyphSpacing + (barWidth - glyphsPerRow * glyphSpacing) / 2;
+                        const y = currentY;
+                        
+                        const originalSize = sample.visual_properties?.size || 10;
+                        sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                        renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                        sample.visual_properties.size = originalSize;
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: x,
+                            y: y,
+                            originalX: x,
+                            originalY: y,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                    
+                } else if (barStyle === 'packed') {
+                    // Packed: glyphs packed more densely with smaller size
+                    const glyphSize = 8;
+                    const glyphSpacing = glyphSize * 1.1;
+                    const glyphsPerRow = Math.floor(barWidth / glyphSpacing);
+                    const rowsNeeded = Math.ceil(glyphCount / glyphsPerRow);
+                    const actualBarHeight = rowsNeeded * glyphSpacing;
+                    
+                    // Center the glyphs vertically within the bar
+                    const startY = Math.max(barTopY, baseY - actualBarHeight);
+                    let currentY = startY;
+                    let row = 0;
+                    
+                    diverseSamples.forEach((sample, j) => {
+                        if (j > 0 && j % glyphsPerRow === 0) {
+                            row++;
+                            currentY = startY + row * glyphSpacing;
+                        }
+                        const x = barX + (j % glyphsPerRow) * glyphSpacing + (barWidth - glyphsPerRow * glyphSpacing) / 2;
+                        const y = currentY;
+                        
+                        const originalSize = sample.visual_properties?.size || 10;
+                        sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                        renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                        sample.visual_properties.size = originalSize;
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: x,
+                            y: y,
+                            originalX: x,
+                            originalY: y,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                    
+                } else if (barStyle === 'flowing') {
+                    // Flowing: glyphs arranged in a flowing, organic pattern within the bar
+                    const glyphSize = 10;
+                    const centerX = barX + barWidth / 2;
+                    const centerY = barTopY + barHeight / 2;
+                    
+                    // Arrange glyphs in a flowing pattern (spiral or wave)
+                    diverseSamples.forEach((sample, j) => {
+                        const t = j / diverseSamples.length;
+                        const angle = t * Math.PI * 4; // 2 full rotations
+                        const radius = Math.min(barWidth / 2 - glyphSize, barHeight / 2 - glyphSize) * (0.3 + t * 0.7);
+                        
+                        // Add wave variation for more organic feel
+                        const waveOffset = Math.sin(t * Math.PI * 6) * (barWidth * 0.1);
+                        const x = centerX + Math.cos(angle) * radius + waveOffset;
+                        const y = centerY + Math.sin(angle) * radius;
+                        
+                        // Ensure glyph stays within bar bounds
+                        const clampedX = Math.max(barX + glyphSize, Math.min(barX + barWidth - glyphSize, x));
+                        const clampedY = Math.max(barTopY + glyphSize, Math.min(baseY - glyphSize, y));
+                        
+                        const originalSize = sample.visual_properties?.size || 10;
+                        sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                        renderer.isotypeRenderer.renderIsotype(sample, clampedX, clampedY, false);
+                        sample.visual_properties.size = originalSize;
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: clampedX,
+                            y: clampedY,
+                            originalX: clampedX,
+                            originalY: clampedY,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                }
+                
+                // Draw bar outline (optional visual aid)
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(barX, barTopY, barWidth, barHeight);
+                
+                // Draw category label
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(category, barX + barWidth / 2, baseY + 30);
+                
+                if (showNumbers) {
+                    ctx.fillText(`${count}`, barX + barWidth / 2, baseY + 50);
+                }
+                ctx.textAlign = 'left';
+            });
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+        }
+        
+        // Render Pie Chart
+        function renderPieChart() {
+            const sliceStyle = document.getElementById('slice-style-4').value;
+            const unitSize = parseInt(document.getElementById('unit-size-4').value);
+            const showPercentages = document.getElementById('show-percentages-4').checked;
+            
+            const { canvas, ctx, renderer } = canvases.pieChart;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Seeded random for consistent data
+            let randomSeed = 23456; // Fixed seed for pie chart
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            const categories = [
+                { label: 'Category A', count: 180 },
+                { label: 'Category B', count: 140 },
+                { label: 'Category C', count: 110 },
+                { label: 'Category D', count: 85 },
+                { label: 'Category E', count: 55 }
+            ];
+            
+            const total = categories.reduce((sum, c) => sum + c.count, 0);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 2 - 100;
+            
+            let currentAngle = -Math.PI / 2;
+            
+            // Track used participant indices to ensure diversity across slices
+            let globalParticipantOffset = 0;
+            
+            categories.forEach((category, i) => {
+                const sliceAngle = (category.count / total) * Math.PI * 2;
+                const midAngle = currentAngle + sliceAngle / 2;
+                
+                // Get samples for this slice (using seeded random for consistency)
+                // Use different offsets for each category to ensure diversity
+                const glyphCount = Math.ceil(category.count / unitSize);
+                const baseOffset = Math.floor(seededRandom() * 50); // Vary starting point
+                const startIdx = (globalParticipantOffset + baseOffset + i * 25) % allParticipants.length;
+                const samples = [];
+                for (let j = 0; j < glyphCount * 2; j++) {
+                    samples.push(allParticipants[(startIdx + j) % allParticipants.length]);
+                }
+                const diverseSamples = renderer.selectDiverseSamples(samples, glyphCount, 'representative');
+                globalParticipantOffset += glyphCount * 2;
+                
+                // Render glyphs in slice
+                if (sliceStyle === 'radial') {
+                    diverseSamples.forEach((sample, j) => {
+                        const t = j / diverseSamples.length;
+                        const glyphRadius = radius * (0.3 + t * 0.6);
+                        const angle = currentAngle + t * sliceAngle;
+                        const x = centerX + Math.cos(angle) * glyphRadius;
+                        const y = centerY + Math.sin(angle) * glyphRadius;
+                        
+                        renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: x,
+                            y: y,
+                            originalX: x,
+                            originalY: y,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                } else if (sliceStyle === 'packed') {
+                    // Pack glyphs in slice area
+                    const sliceCenterRadius = radius * 0.6;
+                    const sliceCenterX = centerX + Math.cos(midAngle) * sliceCenterRadius;
+                    const sliceCenterY = centerY + Math.sin(midAngle) * sliceCenterRadius;
+                    
+                    const glyphSize = 10;
+                    const cols = Math.ceil(Math.sqrt(glyphCount));
+                    diverseSamples.forEach((sample, j) => {
+                        const row = Math.floor(j / cols);
+                        const col = j % cols;
+                        const offsetX = (col - cols/2) * glyphSize * 1.2;
+                        const offsetY = (row - Math.ceil(glyphCount/cols)/2) * glyphSize * 1.2;
+                        
+                        const x = sliceCenterX + offsetX;
+                        const y = sliceCenterY + offsetY;
+                        
+                        const originalSize = sample.visual_properties?.size || 10;
+                        sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                        renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                        sample.visual_properties.size = originalSize;
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: x,
+                            y: y,
+                            originalX: x,
+                            originalY: y,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                    
+                } else if (sliceStyle === 'flowing') {
+                    // Flowing: glyphs arranged in a flowing pattern along the slice
+                    const glyphSize = 10;
+                    const innerRadius = radius * 0.3;
+                    const outerRadius = radius * 0.9;
+                    
+                    diverseSamples.forEach((sample, j) => {
+                        const t = j / diverseSamples.length;
+                        
+                        // Create a flowing path along the slice
+                        // Use a combination of radial position and wave variation
+                        const radialT = t; // Position along the slice (0 to 1)
+                        const angle = currentAngle + radialT * sliceAngle;
+                        
+                        // Add wave variation perpendicular to the radius for flowing effect
+                        const waveAmplitude = (outerRadius - innerRadius) * 0.2;
+                        const waveFrequency = 3; // Number of waves along the slice
+                        const waveOffset = Math.sin(radialT * Math.PI * waveFrequency) * waveAmplitude;
+                        
+                        // Calculate radius with wave variation
+                        const baseRadius = innerRadius + (outerRadius - innerRadius) * radialT;
+                        const radiusWithWave = baseRadius + waveOffset;
+                        
+                        // Calculate position
+                        const x = centerX + Math.cos(angle) * radiusWithWave;
+                        const y = centerY + Math.sin(angle) * radiusWithWave;
+                        
+                        // Ensure glyph stays within slice bounds (simplified check)
+                        // Check if point is within the slice angle range
+                        const pointAngle = Math.atan2(y - centerY, x - centerX);
+                        let normalizedAngle = pointAngle;
+                        if (normalizedAngle < -Math.PI / 2) normalizedAngle += Math.PI * 2;
+                        
+                        const sliceStart = currentAngle;
+                        let sliceEnd = currentAngle + sliceAngle;
+                        if (sliceEnd < -Math.PI / 2) sliceEnd += Math.PI * 2;
+                        
+                        // Only render if within slice bounds
+                        if ((normalizedAngle >= sliceStart && normalizedAngle <= sliceEnd) || 
+                            (sliceEnd < sliceStart && (normalizedAngle >= sliceStart || normalizedAngle <= sliceEnd))) {
+                            
+                            const originalSize = sample.visual_properties?.size || 10;
+                            sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                            renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                            sample.visual_properties.size = originalSize;
+                            
+                            // Record position for interaction
+                            const quote = renderer.extractQuote(sample);
+                            renderer.glyphPositions.push({
+                                x: x,
+                                y: y,
+                                originalX: x,
+                                originalY: y,
+                                sample: sample,
+                                quote: quote,
+                                isJumping: false
+                            });
+                        }
+                    });
+                }
+                
+                // Draw slice border
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.stroke();
+                
+                // Draw label
+                if (showPercentages) {
+                    const labelRadius = radius * 0.75;
+                    const labelX = centerX + Math.cos(midAngle) * labelRadius;
+                    const labelY = centerY + Math.sin(midAngle) * labelRadius;
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${category.label}`, labelX, labelY - 5);
+                    ctx.fillText(`${(category.count / total * 100).toFixed(1)}%`, labelX, labelY + 10);
+                    ctx.textAlign = 'left';
+                }
+                
+                currentAngle += sliceAngle;
+            });
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+        }
+        
+        // Render Line Chart
+        function renderLineChart() {
+            const timePoints = parseInt(document.getElementById('time-points-5').value);
+            const clusterSize = parseInt(document.getElementById('cluster-size-5').value);
+            const showTrend = document.getElementById('show-trend-5').checked;
+            
+            const { canvas, ctx, renderer } = canvases.lineChart;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Seeded random for consistent data
+            let randomSeed = 34567; // Fixed seed for line chart
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            const padding = 100;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+            const baseY = canvas.height - padding;
+            
+            // Generate trend data (using seeded random for consistency)
+            // Create more diverse values with larger range
+            const values = [];
+            const baseValues = [45, 65, 55, 75, 50, 80, 60, 70, 55, 85]; // More diverse base pattern
+            for (let i = 0; i < timePoints; i++) {
+                const baseValue = baseValues[i % baseValues.length];
+                const variation = seededRandom() * 25 - 12.5; // ±12.5 variation
+                const trend = Math.sin(i / timePoints * Math.PI * 2) * 20; // Trend component
+                values.push(Math.max(30, Math.min(100, baseValue + variation + trend))); // Clamp between 30-100
+            }
+            const maxValue = Math.max(...values);
+            
+            // Draw trend line
+            if (showTrend) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                values.forEach((value, i) => {
+                    const x = padding + (i / (timePoints - 1)) * chartWidth;
+                    const y = baseY - (value / maxValue) * chartHeight;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+            
+            // Track used participant indices to ensure diversity across time points
+            let globalParticipantOffset = 0;
+            
+            // Render glyph clusters at each point
+            values.forEach((value, i) => {
+                const x = padding + (i / (timePoints - 1)) * chartWidth;
+                const y = baseY - (value / maxValue) * chartHeight;
+                
+                const glyphCount = Math.ceil(value / 8); // More glyphs per point
+                const baseOffset = Math.floor(seededRandom() * 30);
+                const startIdx = (globalParticipantOffset + baseOffset + i * 15) % allParticipants.length;
+                const samples = [];
+                for (let j = 0; j < Math.max(glyphCount, 5); j++) {
+                    samples.push(allParticipants[(startIdx + j) % allParticipants.length]);
+                }
+                const diverseSamples = renderer.selectDiverseSamples(samples, Math.min(glyphCount, 15), 'representative');
+                globalParticipantOffset += glyphCount;
+                
+                // Render glyphs in cluster
+                diverseSamples.forEach((sample, j) => {
+                    const angle = (Math.PI * 2 * j) / diverseSamples.length;
+                    const radius = clusterSize * 0.3;
+                    const glyphX = x + Math.cos(angle) * radius;
+                    const glyphY = y + Math.sin(angle) * radius;
+                    
+                    renderer.isotypeRenderer.renderIsotype(sample, glyphX, glyphY, false);
+                    
+                    // Record position for interaction
+                    const quote = renderer.extractQuote(sample);
+                    renderer.glyphPositions.push({
+                        x: glyphX,
+                        y: glyphY,
+                        originalX: glyphX,
+                        originalY: glyphY,
+                        sample: sample,
+                        quote: quote,
+                        isJumping: false
+                    });
+                });
+                
+                // Draw time label
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`T${i + 1}`, x, baseY + 20);
+                ctx.textAlign = 'left';
+            });
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+        }
+        
+        // Render Heatmap
+        function renderHeatmap() {
+            const gridSize = parseInt(document.getElementById('grid-size-6').value);
+            const glyphSize = parseInt(document.getElementById('glyph-size-6').value);
+            const showIntensity = document.getElementById('show-intensity-6').checked;
+            
+            const { canvas, ctx, renderer } = canvases.heatmap;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0A0A0A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            renderer.clearGlyphPositions();
+            
+            // Seeded random for consistent data
+            let randomSeed = 45678; // Fixed seed for heatmap
+            const seededRandom = () => {
+                randomSeed = (randomSeed * 9301 + 49297) % 233280;
+                return randomSeed / 233280;
+            };
+            
+            const cellWidth = canvas.width / gridSize;
+            const cellHeight = canvas.height / gridSize;
+            
+            // Generate intensity data (using seeded random for consistency)
+            // Create more diverse intensity pattern with clusters and variations
+            const intensities = [];
+            const patternSeed = seededRandom(); // Base pattern seed
+            for (let row = 0; row < gridSize; row++) {
+                intensities[row] = [];
+                for (let col = 0; col < gridSize; col++) {
+                    // Create pattern with clusters (higher intensity in center areas)
+                    const centerDist = Math.sqrt(
+                        Math.pow(row - gridSize / 2, 2) + Math.pow(col - gridSize / 2, 2)
+                    ) / (gridSize / 2);
+                    const clusterFactor = Math.max(0, 1 - centerDist * 0.7); // Higher in center
+                    const randomFactor = seededRandom();
+                    // Combine pattern with randomness for diversity
+                    intensities[row][col] = Math.min(1, clusterFactor * 0.6 + randomFactor * 0.4);
+                }
+            }
+            
+            // Track used participant indices to ensure diversity across cells
+            let globalParticipantOffset = 0;
+            
+            // Render each cell
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const intensity = intensities[row][col];
+                    const cellX = col * cellWidth;
+                    const cellY = row * cellHeight;
+                    
+                    // Draw background intensity
+                    if (showIntensity) {
+                        const alpha = intensity * 0.3;
+                        ctx.fillStyle = `rgba(255, 0, 110, ${alpha})`;
+                        ctx.fillRect(cellX, cellY, cellWidth, cellHeight);
+                    }
+                    
+                    // Render glyphs in cell (using seeded random for consistency)
+                    // More diverse glyph counts: 3-25 based on intensity
+                    const glyphCount = Math.max(3, Math.ceil(intensity * 25));
+                    const baseOffset = Math.floor(seededRandom() * 40);
+                    const cellIndex = row * gridSize + col;
+                    const startIdx = (globalParticipantOffset + baseOffset + cellIndex * 8) % allParticipants.length;
+                    const samples = [];
+                    for (let j = 0; j < glyphCount * 1.5; j++) {
+                        samples.push(allParticipants[(startIdx + j) % allParticipants.length]);
+                    }
+                    const diverseSamples = renderer.selectDiverseSamples(samples, glyphCount, 'representative');
+                    globalParticipantOffset += glyphCount;
+                    
+                    const glyphsPerRow = Math.floor(cellWidth / (glyphSize * 1.2));
+                    diverseSamples.forEach((sample, i) => {
+                        const glyphRow = Math.floor(i / glyphsPerRow);
+                        const glyphCol = i % glyphsPerRow;
+                        const x = cellX + glyphCol * (glyphSize * 1.2) + glyphSize;
+                        const y = cellY + glyphRow * (glyphSize * 1.2) + glyphSize;
+                        
+                        const originalSize = sample.visual_properties?.size || 10;
+                        sample.visual_properties = { ...sample.visual_properties, size: glyphSize };
+                        renderer.isotypeRenderer.renderIsotype(sample, x, y, false);
+                        sample.visual_properties.size = originalSize;
+                        
+                        // Record position for interaction
+                        const quote = renderer.extractQuote(sample);
+                        renderer.glyphPositions.push({
+                            x: x,
+                            y: y,
+                            originalX: x,
+                            originalY: y,
+                            sample: sample,
+                            quote: quote,
+                            isJumping: false
+                        });
+                    });
+                    
+                    // Draw cell border
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(cellX, cellY, cellWidth, cellHeight);
+                }
+            }
+            
+            // Save canvas state for interactions
+            renderer.saveCanvasState();
+        }
+        
+        // Setup hover interactions
+        function setupHoverInteractions(canvas, renderer) {
+            const oldMousemove = canvas._mousemoveHandler;
+            const oldMouseleave = canvas._mouseleaveHandler;
+            const oldClick = canvas._clickHandler;
+            if (oldMousemove) canvas.removeEventListener('mousemove', oldMousemove);
+            if (oldMouseleave) canvas.removeEventListener('mouseleave', oldMouseleave);
+            if (oldClick) canvas.removeEventListener('click', oldClick);
+            
+            const mousemoveHandler = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                renderer.checkGlyphHover(x, y);
+            };
+            
+            const mouseleaveHandler = () => {
+                renderer.hideTooltip();
+            };
+            
+            const clickHandler = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                renderer.handleDoubleClick(x, y);
+            };
+            
+            canvas._mousemoveHandler = mousemoveHandler;
+            canvas._mouseleaveHandler = mouseleaveHandler;
+            canvas._clickHandler = clickHandler;
+            
+            canvas.addEventListener('mousemove', mousemoveHandler);
+            canvas.addEventListener('mouseleave', mouseleaveHandler);
+            canvas.addEventListener('click', clickHandler);
+        }
+        
+        // Load data and initialize
+        async function init() {
+            try {
+                // Try to load data with correct path
+                let data;
+                try {
+                    data = await dataLoader.load();
+                    allParticipants = data.participants;
+                } catch (loadError) {
+                    console.warn('Failed to load data from default path, trying alternative paths...', loadError);
+                    // Try alternative paths
+                    const alternativePaths = [
+                        '../../processed_embeddings/sample_participants.json',
+                        '../../processed_embeddings/all_participants.json',
+                        '../processed_embeddings/sample_participants.json',
+                        '../processed_embeddings/all_participants.json'
+                    ];
+                    
+                    let loaded = false;
+                    for (const path of alternativePaths) {
+                        try {
+                            const response = await fetch(path);
+                            if (response.ok) {
+                                const rawData = await response.json();
+                                data = dataLoader.transformData(rawData);
+                                allParticipants = data.participants;
+                                loaded = true;
+                                console.log(`Successfully loaded data from ${path}`);
+                                break;
+                            }
+                        } catch (e) {
+                                continue;
+                            }
+                        }
+                    
+                    if (!loaded) {
+                        throw new Error('Could not load data from any path');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // Use mock data
+                allParticipants = Array.from({length: 300}, (_, i) => ({
+                    id: `mock_${i}`,
+                    original_id: `Mock ${i}`,
+                    text_content: `Sample text content for mock participant ${i}`,
+                    isotype_signature: {
+                        uniqueness_score: Math.random(),
+                        dominant_dimensions: ['semantic'],
+                        emotion: [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()],
+                        semantic: new Array(10).fill(0).map(() => Math.random() - 0.5)
+                    },
+                    visual_properties: {
+                        size: 10 + Math.random() * 5,
+                        color: ['#FF006E', '#00F5FF', '#FFBE0B', '#FB5607', '#8338EC', '#06FFA5', '#FF006E'][Math.floor(Math.random() * 7)]
+                    },
+                    metadata: {
+                        text_length: 500 + Math.random() * 1000
+                    }
+                }));
+            }
+            
+            // Initial renders
+            renderMap();
+            renderFusion();
+            renderBarChart();
+            renderPieChart();
+            renderLineChart();
+            renderHeatmap();
+            
+            // Setup interactions
+            Object.values(canvases).forEach(({ canvas, renderer }) => {
+                setupHoverInteractions(canvas, renderer);
+            });
+            
+            // Event listeners
+            document.getElementById('map-type-1').addEventListener('change', () => {
+                renderMap();
+                setupHoverInteractions(canvases.map.canvas, canvases.map.renderer);
+            });
+            document.getElementById('density-1').addEventListener('input', (e) => {
+                document.getElementById('density-value-1').textContent = e.target.value;
+                renderMap();
+                setupHoverInteractions(canvases.map.canvas, canvases.map.renderer);
+            });
+            
+            document.getElementById('fusion-size-2').addEventListener('input', (e) => {
+                document.getElementById('fusion-size-value-2').textContent = e.target.value;
+                renderFusion();
+                setupHoverInteractions(canvases.fusion.canvas, canvases.fusion.renderer);
+            });
+            document.getElementById('fusion-style-2').addEventListener('change', () => {
+                renderFusion();
+                setupHoverInteractions(canvases.fusion.canvas, canvases.fusion.renderer);
+            });
+            document.getElementById('group-count-2').addEventListener('input', (e) => {
+                document.getElementById('group-count-value-2').textContent = e.target.value;
+                renderFusion();
+                setupHoverInteractions(canvases.fusion.canvas, canvases.fusion.renderer);
+            });
+            
+            document.getElementById('bar-style-3').addEventListener('change', () => {
+                renderBarChart();
+                setupHoverInteractions(canvases.barChart.canvas, canvases.barChart.renderer);
+            });
+            document.getElementById('unit-size-3').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-3').textContent = e.target.value;
+                renderBarChart();
+                setupHoverInteractions(canvases.barChart.canvas, canvases.barChart.renderer);
+            });
+            document.getElementById('show-numbers-3').addEventListener('change', () => {
+                renderBarChart();
+                setupHoverInteractions(canvases.barChart.canvas, canvases.barChart.renderer);
+            });
+            
+            document.getElementById('slice-style-4').addEventListener('change', () => {
+                renderPieChart();
+                setupHoverInteractions(canvases.pieChart.canvas, canvases.pieChart.renderer);
+            });
+            document.getElementById('unit-size-4').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-4').textContent = e.target.value;
+                renderPieChart();
+                setupHoverInteractions(canvases.pieChart.canvas, canvases.pieChart.renderer);
+            });
+            document.getElementById('show-percentages-4').addEventListener('change', () => {
+                renderPieChart();
+                setupHoverInteractions(canvases.pieChart.canvas, canvases.pieChart.renderer);
+            });
+            
+            document.getElementById('time-points-5').addEventListener('input', (e) => {
+                document.getElementById('time-points-value-5').textContent = e.target.value;
+                renderLineChart();
+                setupHoverInteractions(canvases.lineChart.canvas, canvases.lineChart.renderer);
+            });
+            document.getElementById('cluster-size-5').addEventListener('input', (e) => {
+                document.getElementById('cluster-size-value-5').textContent = e.target.value;
+                renderLineChart();
+                setupHoverInteractions(canvases.lineChart.canvas, canvases.lineChart.renderer);
+            });
+            document.getElementById('show-trend-5').addEventListener('change', () => {
+                renderLineChart();
+                setupHoverInteractions(canvases.lineChart.canvas, canvases.lineChart.renderer);
+            });
+            
+            document.getElementById('grid-size-6').addEventListener('input', (e) => {
+                document.getElementById('grid-size-value-6').textContent = e.target.value;
+                renderHeatmap();
+                setupHoverInteractions(canvases.heatmap.canvas, canvases.heatmap.renderer);
+            });
+            document.getElementById('glyph-size-6').addEventListener('input', (e) => {
+                document.getElementById('glyph-size-value-6').textContent = e.target.value;
+                renderHeatmap();
+                setupHoverInteractions(canvases.heatmap.canvas, canvases.heatmap.renderer);
+            });
+            document.getElementById('show-intensity-6').addEventListener('change', () => {
+                renderHeatmap();
+                setupHoverInteractions(canvases.heatmap.canvas, canvases.heatmap.renderer);
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>
+

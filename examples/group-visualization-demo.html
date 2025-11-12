@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Visualization Demo - Jelly Soul</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0A0A0A;
+            color: #FFFFFF;
+            padding: 2rem;
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+        
+        .example-section {
+            margin-bottom: 4rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .example-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .example-description {
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+        
+        canvas {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: #0A0A0A;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            min-width: 80px;
+        }
+        
+        .control-group select {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #FFFFFF;
+            font-size: 0.875rem;
+        }
+        
+        .control-group input[type="range"] {
+            width: 150px;
+        }
+        
+        .control-group span {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            min-width: 60px;
+        }
+        
+        .info-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border-left: 3px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        
+        /* Glyph Tooltip Styles */
+        .glyph-tooltip {
+            position: fixed;
+            display: none;
+            background: rgba(20, 20, 20, 0.95);
+            color: #FFFFFF;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            max-width: 300px;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            animation: tooltipFadeIn 0.2s ease-out;
+        }
+        
+        .glyph-tooltip.arrow-above::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(20, 20, 20, 0.95);
+        }
+        
+        .glyph-tooltip.arrow-below::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid rgba(20, 20, 20, 0.95);
+        }
+        
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        canvas {
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h1>Jelly Soul: Group Visualization Demo</h1>
+    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">
+        This demo shows how to use Jelly Soul for coarse-grained visualization of group sizes.
+        Each glyph represents a group's characteristics while the number or size of glyphs shows the group size.
+    </p>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 1: Gender Distribution (Count Encoding)</h2>
+        <p class="example-description">
+            <strong>Count Encoding:</strong> Each glyph represents a fixed number of people (e.g., 10 people per glyph).
+            The number of glyphs shows the size of each group. <strong>Each glyph is unique</strong> - they are diverse 
+            and represent different individuals within the group, avoiding stereotypes. Together they form a colorful 
+            mosaic that reflects the group's diversity.
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-1" min="5" max="50" step="5" value="10">
+                <span id="unit-size-value-1">10</span>
+            </div>
+            <div class="control-group">
+                <label>Layout:</label>
+                <select id="layout-1">
+                    <option value="grid">Grid</option>
+                    <option value="horizontal">Horizontal</option>
+                    <option value="circle">Circle</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Diversity:</label>
+                <select id="diversity-1">
+                    <option value="random">Random</option>
+                    <option value="stratified">Stratified</option>
+                    <option value="representative">Representative</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Columns:</label>
+                <input type="range" id="columns-1" min="3" max="10" step="1" value="5">
+                <span id="columns-value-1">5</span>
+            </div>
+        </div>
+        <canvas id="canvas-1" width="1200" height="500"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> Each glyph represents the specified number of people. 
+            Count the glyphs to see the group size. For example, 15 glyphs × 10 people = 150 people.
+        </div>
+    </div>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 2: Gender Distribution (Size Encoding)</h2>
+        <p class="example-description">
+            <strong>Size Encoding:</strong> Each group is represented by multiple diverse glyphs that form a "colorful mosaic". 
+            The overall size of the glyph cluster is proportional to the group size. 
+            <strong>Each glyph is unique</strong> - they showcase the diversity within the group, avoiding stereotypes.
+            <br><br>
+            <strong>Note:</strong> The X and Y axes in this visualization are for layout purposes only - they do not represent 
+            any data dimensions. Groups are arranged horizontally for comparison, and the vertical position is fixed.
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Layout:</label>
+                <select id="layout-2">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                </select>
+            </div>
+        </div>
+        <canvas id="canvas-2" width="1200" height="400"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> Each group has one glyph. The larger the glyph, the larger the group.
+            Compare glyph sizes to understand relative group sizes.
+        </div>
+    </div>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 3: Gender Distribution (Density Visualization)</h2>
+        <p class="example-description">
+            <strong>Density Encoding:</strong> Glyphs are arranged in a compact cluster, where the density and spread 
+            of the cluster represents the group size. Larger groups form denser, more spread-out clusters. 
+            This creates an organic, flowing visualization that emphasizes the collective nature of groups 
+            while maintaining individual diversity.
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Density:</label>
+                <input type="range" id="density-3" min="0.3" max="1.0" step="0.1" value="0.6">
+                <span id="density-value-3">0.6</span>
+            </div>
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-3" min="5" max="30" step="5" value="15">
+                <span id="unit-size-value-3">15</span>
+            </div>
+        </div>
+        <canvas id="canvas-3" width="1200" height="450"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> The density and spread of glyphs in each cluster represents the group size. 
+            Denser, more spread-out clusters indicate larger groups. Each glyph remains unique, showing individual diversity.
+        </div>
+    </div>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 4: Gender Distribution (Stacked Bars)</h2>
+        <p class="example-description">
+            <strong>Stacked Bar Encoding:</strong> Groups are represented as vertical stacks of diverse glyphs. 
+            The height of each stack is proportional to the group size. This layout makes it easy to compare 
+            group sizes while maintaining the diversity of individual glyphs within each group.
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-4" min="5" max="25" step="5" value="10">
+                <span id="unit-size-value-4">10</span>
+            </div>
+            <div class="control-group">
+                <label>Bar Width:</label>
+                <input type="range" id="bar-width-4" min="100" max="300" step="20" value="200">
+                <span id="bar-width-value-4">200</span>
+            </div>
+        </div>
+        <canvas id="canvas-4" width="1200" height="500"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> Each vertical bar represents a group. The height of the bar (number of glyphs) 
+            shows the group size. Compare bar heights to understand relative group sizes.
+        </div>
+    </div>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 5: Gender Distribution (Proportional Circles)</h2>
+        <p class="example-description">
+            <strong>Proportional Circle Encoding:</strong> Each group is represented by a large circle filled with 
+            diverse glyphs. The radius of the circle is proportional to the group size, creating an intuitive 
+            visual comparison. Glyphs are distributed within the circle, maintaining diversity while forming 
+            a cohesive visual unit.
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-5" min="5" max="20" step="5" value="10">
+                <span id="unit-size-value-5">10</span>
+            </div>
+            <div class="control-group">
+                <label>Show Circle:</label>
+                <input type="checkbox" id="show-circle-5" checked>
+            </div>
+        </div>
+        <canvas id="canvas-5" width="1200" height="500"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> Each circle represents a group. The circle's size is proportional to the group size. 
+            Glyphs are distributed within the circle, showing both the scale and diversity of each group.
+        </div>
+    </div>
+    
+    <div class="example-section">
+        <h2 class="example-title">Example 6: Unified Community (All Genders Together)</h2>
+        <p class="example-description">
+            <strong>Unified Community:</strong> When we break down the boundaries between groups, all individuals 
+            come together to form a beautiful, diverse, and inclusive community. This visualization shows how 
+            different genders naturally blend together, creating an organic, flowing mosaic where each unique 
+            glyph contributes to the whole. <strong>No labels, no boundaries—just people together.</strong>
+        </p>
+        <div class="controls">
+            <div class="control-group">
+                <label>Unit Size:</label>
+                <input type="range" id="unit-size-6" min="5" max="20" step="5" value="10">
+                <span id="unit-size-value-6">10</span>
+            </div>
+            <div class="control-group">
+                <label>Layout:</label>
+                <select id="layout-6">
+                    <option value="organic">Organic Flow</option>
+                    <option value="circle">Unified Circle</option>
+                    <option value="spiral">Spiral</option>
+                    <option value="scatter">Natural Scatter</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Density:</label>
+                <input type="range" id="density-6" min="0.5" max="1.5" step="0.1" value="1.0">
+                <span id="density-value-6">1.0</span>
+            </div>
+        </div>
+        <canvas id="canvas-6" width="1200" height="600"></canvas>
+        <div class="info-box">
+            <strong>How to read:</strong> All individuals from different groups are mixed together, forming a unified, 
+            diverse community. Each glyph represents a unique person, and together they create a beautiful mosaic 
+            that celebrates diversity and inclusion. This visualization emphasizes that we are all part of one 
+            interconnected community.
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import the necessary modules
+        import { GroupIsotypeRenderer } from '../src/groupIsotypeRenderer.js';
+        import { DataLoader } from '../src/dataLoader.js';
+        
+        // Initialize canvas 1
+        const canvas1 = document.getElementById('canvas-1');
+        const ctx1 = canvas1.getContext('2d');
+        const groupRenderer1 = new GroupIsotypeRenderer(canvas1, ctx1);
+        
+        // Initialize canvas 2
+        const canvas2 = document.getElementById('canvas-2');
+        const ctx2 = canvas2.getContext('2d');
+        const groupRenderer2 = new GroupIsotypeRenderer(canvas2, ctx2);
+        
+        // Initialize canvas 3 (Density)
+        const canvas3 = document.getElementById('canvas-3');
+        const ctx3 = canvas3.getContext('2d');
+        const groupRenderer3 = new GroupIsotypeRenderer(canvas3, ctx3);
+        
+        // Initialize canvas 4 (Stacked Bars)
+        const canvas4 = document.getElementById('canvas-4');
+        const ctx4 = canvas4.getContext('2d');
+        const groupRenderer4 = new GroupIsotypeRenderer(canvas4, ctx4);
+        
+        // Initialize canvas 5 (Proportional Circles)
+        const canvas5 = document.getElementById('canvas-5');
+        const ctx5 = canvas5.getContext('2d');
+        const groupRenderer5 = new GroupIsotypeRenderer(canvas5, ctx5);
+        
+        // Initialize canvas 6 (Unified Community)
+        const canvas6 = document.getElementById('canvas-6');
+        const ctx6 = canvas6.getContext('2d');
+        const groupRenderer6 = new GroupIsotypeRenderer(canvas6, ctx6);
+        
+        // Load data
+        const dataLoader = new DataLoader();
+        
+        async function loadAndRender() {
+            try {
+                const data = await dataLoader.load();
+                const participants = data.participants;
+                
+                // Group by gender (simplified - using a mock gender field)
+                // In real data, you would have actual gender information
+                // Distribute participants proportionally across groups
+                const totalDesired = 300; // male: 150, female: 120, other: 30
+                const totalAvailable = participants.length;
+                
+                // Calculate proportional distribution
+                const maleCount = Math.max(1, Math.round(150 * totalAvailable / totalDesired));
+                const femaleCount = Math.max(1, Math.round(120 * totalAvailable / totalDesired));
+                const otherCount = Math.max(1, Math.round(30 * totalAvailable / totalDesired));
+                
+                // Distribute participants, cycling through if needed
+                const maleSamples = [];
+                const femaleSamples = [];
+                const otherSamples = [];
+                
+                for (let i = 0; i < maleCount; i++) {
+                    maleSamples.push(participants[i % participants.length]);
+                }
+                for (let i = 0; i < femaleCount; i++) {
+                    femaleSamples.push(participants[(maleCount + i) % participants.length]);
+                }
+                for (let i = 0; i < otherCount; i++) {
+                    otherSamples.push(participants[(maleCount + femaleCount + i) % participants.length]);
+                }
+                
+                const genderGroups = {
+                    male: {
+                        count: 150,
+                        label: 'Male',
+                        samples: maleSamples
+                    },
+                    female: {
+                        count: 120,
+                        label: 'Female',
+                        samples: femaleSamples
+                    },
+                    other: {
+                        count: 30,
+                        label: 'Other',
+                        samples: otherSamples
+                    }
+                };
+                
+                // Render example 1 (count encoding)
+                function renderExample1() {
+                    const unitSize = parseInt(document.getElementById('unit-size-1').value);
+                    const layout = document.getElementById('layout-1').value;
+                    const columns = parseInt(document.getElementById('columns-1').value);
+                    const diversity = document.getElementById('diversity-1').value;
+                    
+                    groupRenderer1.renderGroups(genderGroups, {
+                        encoding: 'count',
+                        unitSize: unitSize,
+                        layout: layout,
+                        columns: columns,
+                        spacing: 20,
+                        diversityMethod: diversity
+                    });
+                }
+                
+                // Render example 2 (size encoding)
+                function renderExample2() {
+                    const layout = document.getElementById('layout-2').value;
+                    
+                    groupRenderer2.renderGroups(genderGroups, {
+                        encoding: 'size',
+                        layout: layout,
+                        spacing: 100,
+                        diversityMethod: 'representative' // Use representative method for size encoding to create colorful mosaic
+                    });
+                }
+                
+                // Render example 3 (density encoding)
+                function renderExample3() {
+                    const density = parseFloat(document.getElementById('density-3').value);
+                    const unitSize = parseInt(document.getElementById('unit-size-3').value);
+                    
+                    // Clear canvas
+                    ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
+                    ctx3.fillStyle = '#0A0A0A';
+                    ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+                    groupRenderer3.clearGlyphPositions();
+                    
+                    let currentY = 80;
+                    Object.entries(genderGroups).forEach(([groupName, group]) => {
+                        groupRenderer3.renderDensityEncoding(
+                            group.label || groupName,
+                            group.count,
+                            group.samples,
+                            unitSize,
+                            density,
+                            currentY,
+                            'representative'
+                        );
+                        currentY += 150;
+                    });
+                }
+                
+                // Render example 4 (stacked bars)
+                function renderExample4() {
+                    const unitSize = parseInt(document.getElementById('unit-size-4').value);
+                    const barWidth = parseInt(document.getElementById('bar-width-4').value);
+                    
+                    // Clear canvas
+                    ctx4.clearRect(0, 0, canvas4.width, canvas4.height);
+                    ctx4.fillStyle = '#0A0A0A';
+                    ctx4.fillRect(0, 0, canvas4.width, canvas4.height);
+                    groupRenderer4.clearGlyphPositions();
+                    
+                    let currentY = 80;
+                    Object.entries(genderGroups).forEach(([groupName, group]) => {
+                        groupRenderer4.renderStackedBarEncoding(
+                            group.label || groupName,
+                            group.count,
+                            group.samples,
+                            unitSize,
+                            barWidth,
+                            currentY,
+                            'representative'
+                        );
+                        // Estimate height needed for this bar
+                        const glyphCount = Math.ceil(group.count / unitSize);
+                        const glyphsPerRow = Math.floor(barWidth / (12 * 1.2));
+                        const rows = Math.ceil(glyphCount / glyphsPerRow);
+                        currentY += rows * (12 * 1.2) + 100;
+                    });
+                }
+                
+                // Render example 5 (proportional circles)
+                function renderExample5() {
+                    const unitSize = parseInt(document.getElementById('unit-size-5').value);
+                    const showCircle = document.getElementById('show-circle-5').checked;
+                    
+                    // Clear canvas
+                    ctx5.clearRect(0, 0, canvas5.width, canvas5.height);
+                    ctx5.fillStyle = '#0A0A0A';
+                    ctx5.fillRect(0, 0, canvas5.width, canvas5.height);
+                    groupRenderer5.clearGlyphPositions();
+                    
+                    const centerY = canvas5.height / 2;
+                    Object.entries(genderGroups).forEach(([groupName, group], index) => {
+                        groupRenderer5.renderProportionalCircleEncoding(
+                            group.label || groupName,
+                            group.count,
+                            group.samples,
+                            genderGroups,
+                            index,
+                            unitSize,
+                            showCircle,
+                            centerY,
+                            'representative'
+                        );
+                    });
+                }
+                
+                // Render example 6 (unified community - all genders together)
+                function renderExample6() {
+                    const unitSize = parseInt(document.getElementById('unit-size-6').value);
+                    const layout = document.getElementById('layout-6').value;
+                    const density = parseFloat(document.getElementById('density-6').value);
+                    
+                    // Combine all groups into one unified community
+                    const allSamples = [];
+                    let totalCount = 0;
+                    Object.values(genderGroups).forEach(group => {
+                        allSamples.push(...group.samples);
+                        totalCount += group.count;
+                    });
+                    
+                    // Clear canvas
+                    ctx6.clearRect(0, 0, canvas6.width, canvas6.height);
+                    ctx6.fillStyle = '#0A0A0A';
+                    ctx6.fillRect(0, 0, canvas6.width, canvas6.height);
+                    groupRenderer6.clearGlyphPositions();
+                    
+                    // Render unified community
+                    groupRenderer6.renderUnifiedCommunity(
+                        allSamples,
+                        totalCount,
+                        unitSize,
+                        layout,
+                        density
+                    );
+                }
+                
+                // Initial render
+                renderExample1();
+                renderExample2();
+                renderExample3();
+                renderExample4();
+                renderExample5();
+                renderExample6();
+                
+                // Add mouse event listeners for hover effects
+                setupHoverInteractions(canvas1, groupRenderer1);
+                setupHoverInteractions(canvas2, groupRenderer2);
+                setupHoverInteractions(canvas3, groupRenderer3);
+                setupHoverInteractions(canvas4, groupRenderer4);
+                setupHoverInteractions(canvas5, groupRenderer5);
+                setupHoverInteractions(canvas6, groupRenderer6);
+                
+                // Add event listeners
+                document.getElementById('unit-size-1').addEventListener('input', (e) => {
+                    document.getElementById('unit-size-value-1').textContent = e.target.value;
+                    renderExample1();
+                    setupHoverInteractions(canvas1, groupRenderer1);
+                });
+                
+                document.getElementById('layout-1').addEventListener('change', () => {
+                    renderExample1();
+                    setupHoverInteractions(canvas1, groupRenderer1);
+                });
+                document.getElementById('diversity-1').addEventListener('change', () => {
+                    renderExample1();
+                    setupHoverInteractions(canvas1, groupRenderer1);
+                });
+                document.getElementById('columns-1').addEventListener('input', (e) => {
+                    document.getElementById('columns-value-1').textContent = e.target.value;
+                    renderExample1();
+                    setupHoverInteractions(canvas1, groupRenderer1);
+                });
+                
+                document.getElementById('layout-2').addEventListener('change', () => {
+                    renderExample2();
+                    setupHoverInteractions(canvas2, groupRenderer2);
+                });
+                
+                // Example 3 controls
+                document.getElementById('density-3').addEventListener('input', (e) => {
+                    document.getElementById('density-value-3').textContent = e.target.value;
+                    renderExample3();
+                    setupHoverInteractions(canvas3, groupRenderer3);
+                });
+                document.getElementById('unit-size-3').addEventListener('input', (e) => {
+                    document.getElementById('unit-size-value-3').textContent = e.target.value;
+                    renderExample3();
+                    setupHoverInteractions(canvas3, groupRenderer3);
+                });
+                
+                // Example 4 controls
+                document.getElementById('unit-size-4').addEventListener('input', (e) => {
+                    document.getElementById('unit-size-value-4').textContent = e.target.value;
+                    renderExample4();
+                    setupHoverInteractions(canvas4, groupRenderer4);
+                });
+                document.getElementById('bar-width-4').addEventListener('input', (e) => {
+                    document.getElementById('bar-width-value-4').textContent = e.target.value;
+                    renderExample4();
+                    setupHoverInteractions(canvas4, groupRenderer4);
+                });
+                
+                // Example 5 controls
+                document.getElementById('unit-size-5').addEventListener('input', (e) => {
+                    document.getElementById('unit-size-value-5').textContent = e.target.value;
+                    renderExample5();
+                    setupHoverInteractions(canvas5, groupRenderer5);
+                });
+                document.getElementById('show-circle-5').addEventListener('change', () => {
+                    renderExample5();
+                    setupHoverInteractions(canvas5, groupRenderer5);
+                });
+                
+                // Example 6 controls
+                document.getElementById('unit-size-6').addEventListener('input', (e) => {
+                    document.getElementById('unit-size-value-6').textContent = e.target.value;
+                    renderExample6();
+                    setupHoverInteractions(canvas6, groupRenderer6);
+                });
+                document.getElementById('layout-6').addEventListener('change', () => {
+                    renderExample6();
+                    setupHoverInteractions(canvas6, groupRenderer6);
+                });
+                document.getElementById('density-6').addEventListener('input', (e) => {
+                    document.getElementById('density-value-6').textContent = e.target.value;
+                    renderExample6();
+                    setupHoverInteractions(canvas6, groupRenderer6);
+                });
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // Fallback: use mock data
+                renderWithMockData();
+            }
+        }
+        
+        function renderWithMockData() {
+            // Create mock samples with basic structure
+            const createMockSample = (id) => ({
+                id: `mock_${id}`,
+                original_id: `Mock ${id}`,
+                text_content: `Sample text content for mock participant ${id}`,
+                isotype_signature: {
+                    uniqueness_score: Math.random(),
+                    dominant_dimensions: ['semantic'],
+                    emotion: [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()],
+                    semantic: new Array(10).fill(0).map(() => Math.random() - 0.5)
+                },
+                visual_properties: {
+                    size: 10 + Math.random() * 5,
+                    color: ['#FF006E', '#00F5FF', '#FFBE0B', '#FB5607', '#8338EC'][Math.floor(Math.random() * 5)]
+                },
+                metadata: {
+                    text_length: 500 + Math.random() * 1000
+                }
+            });
+            
+            const genderGroups = {
+                male: {
+                    count: 150,
+                    label: 'Male',
+                    samples: Array.from({length: 20}, (_, i) => createMockSample(`male_${i}`))
+                },
+                female: {
+                    count: 120,
+                    label: 'Female',
+                    samples: Array.from({length: 20}, (_, i) => createMockSample(`female_${i}`))
+                },
+                other: {
+                    count: 30,
+                    label: 'Other',
+                    samples: Array.from({length: 10}, (_, i) => createMockSample(`other_${i}`))
+                }
+            };
+            
+            // Render example 1
+            function renderExample1() {
+                const unitSize = parseInt(document.getElementById('unit-size-1').value);
+                const layout = document.getElementById('layout-1').value;
+                const columns = parseInt(document.getElementById('columns-1').value);
+                const diversity = document.getElementById('diversity-1').value;
+                
+                groupRenderer1.renderGroups(genderGroups, {
+                    encoding: 'count',
+                    unitSize: unitSize,
+                    layout: layout,
+                    columns: columns,
+                    spacing: 20,
+                    diversityMethod: diversity
+                });
+            }
+            
+            // Render example 2
+            function renderExample2() {
+                const layout = document.getElementById('layout-2').value;
+                
+                groupRenderer2.renderGroups(genderGroups, {
+                    encoding: 'size',
+                    layout: layout,
+                    spacing: 100,
+                    diversityMethod: 'representative' // Use representative method for size encoding to create colorful mosaic
+                });
+            }
+            
+            // Render example 3 (density encoding)
+            function renderExample3() {
+                const density = parseFloat(document.getElementById('density-3').value);
+                const unitSize = parseInt(document.getElementById('unit-size-3').value);
+                
+                ctx3.clearRect(0, 0, canvas3.width, canvas3.height);
+                ctx3.fillStyle = '#0A0A0A';
+                ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+                groupRenderer3.clearGlyphPositions();
+                
+                let currentY = 80;
+                Object.entries(genderGroups).forEach(([groupName, group]) => {
+                    groupRenderer3.renderDensityEncoding(
+                        group.label || groupName,
+                        group.count,
+                        group.samples,
+                        unitSize,
+                        density,
+                        currentY,
+                        'representative'
+                    );
+                    currentY += 150;
+                });
+            }
+            
+            // Render example 4 (stacked bars)
+            function renderExample4() {
+                const unitSize = parseInt(document.getElementById('unit-size-4').value);
+                const barWidth = parseInt(document.getElementById('bar-width-4').value);
+                
+                ctx4.clearRect(0, 0, canvas4.width, canvas4.height);
+                ctx4.fillStyle = '#0A0A0A';
+                ctx4.fillRect(0, 0, canvas4.width, canvas4.height);
+                groupRenderer4.clearGlyphPositions();
+                
+                let currentY = 80;
+                Object.entries(genderGroups).forEach(([groupName, group]) => {
+                    groupRenderer4.renderStackedBarEncoding(
+                        group.label || groupName,
+                        group.count,
+                        group.samples,
+                        unitSize,
+                        barWidth,
+                        currentY,
+                        'representative'
+                    );
+                    const glyphCount = Math.ceil(group.count / unitSize);
+                    const glyphsPerRow = Math.floor(barWidth / (12 * 1.2));
+                    const rows = Math.ceil(glyphCount / glyphsPerRow);
+                    currentY += rows * (12 * 1.2) + 100;
+                });
+            }
+            
+            // Render example 5 (proportional circles)
+            function renderExample5() {
+                const unitSize = parseInt(document.getElementById('unit-size-5').value);
+                const showCircle = document.getElementById('show-circle-5').checked;
+                
+                ctx5.clearRect(0, 0, canvas5.width, canvas5.height);
+                ctx5.fillStyle = '#0A0A0A';
+                ctx5.fillRect(0, 0, canvas5.width, canvas5.height);
+                groupRenderer5.clearGlyphPositions();
+                
+                const centerY = canvas5.height / 2;
+                Object.entries(genderGroups).forEach(([groupName, group], index) => {
+                    groupRenderer5.renderProportionalCircleEncoding(
+                        group.label || groupName,
+                        group.count,
+                        group.samples,
+                        genderGroups,
+                        index,
+                        unitSize,
+                        showCircle,
+                        centerY,
+                        'representative'
+                    );
+                });
+            }
+            
+            // Render example 6 (unified community - all genders together)
+            function renderExample6() {
+                const unitSize = parseInt(document.getElementById('unit-size-6').value);
+                const layout = document.getElementById('layout-6').value;
+                const density = parseFloat(document.getElementById('density-6').value);
+                
+                // Combine all groups into one unified community
+                const allSamples = [];
+                let totalCount = 0;
+                Object.values(genderGroups).forEach(group => {
+                    allSamples.push(...group.samples);
+                    totalCount += group.count;
+                });
+                
+                ctx6.clearRect(0, 0, canvas6.width, canvas6.height);
+                ctx6.fillStyle = '#0A0A0A';
+                ctx6.fillRect(0, 0, canvas6.width, canvas6.height);
+                groupRenderer6.clearGlyphPositions();
+                
+                groupRenderer6.renderUnifiedCommunity(
+                    allSamples,
+                    totalCount,
+                    unitSize,
+                    layout,
+                    density
+                );
+            }
+            
+            // Initial render
+            renderExample1();
+            renderExample2();
+            renderExample3();
+            renderExample4();
+            renderExample5();
+            renderExample6();
+            
+            // Add mouse event listeners for hover effects
+            setupHoverInteractions(canvas1, groupRenderer1);
+            setupHoverInteractions(canvas2, groupRenderer2);
+            setupHoverInteractions(canvas3, groupRenderer3);
+            setupHoverInteractions(canvas4, groupRenderer4);
+            setupHoverInteractions(canvas5, groupRenderer5);
+            setupHoverInteractions(canvas6, groupRenderer6);
+            
+            // Add event listeners
+            document.getElementById('unit-size-1').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-1').textContent = e.target.value;
+                renderExample1();
+                setupHoverInteractions(canvas1, groupRenderer1);
+            });
+            
+            document.getElementById('layout-1').addEventListener('change', () => {
+                renderExample1();
+                setupHoverInteractions(canvas1, groupRenderer1);
+            });
+            document.getElementById('diversity-1').addEventListener('change', () => {
+                renderExample1();
+                setupHoverInteractions(canvas1, groupRenderer1);
+            });
+            document.getElementById('columns-1').addEventListener('input', (e) => {
+                document.getElementById('columns-value-1').textContent = e.target.value;
+                renderExample1();
+                setupHoverInteractions(canvas1, groupRenderer1);
+            });
+            
+            document.getElementById('layout-2').addEventListener('change', () => {
+                renderExample2();
+                setupHoverInteractions(canvas2, groupRenderer2);
+            });
+            
+            // Example 3 controls
+            document.getElementById('density-3').addEventListener('input', (e) => {
+                document.getElementById('density-value-3').textContent = e.target.value;
+                renderExample3();
+                setupHoverInteractions(canvas3, groupRenderer3);
+            });
+            document.getElementById('unit-size-3').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-3').textContent = e.target.value;
+                renderExample3();
+                setupHoverInteractions(canvas3, groupRenderer3);
+            });
+            
+            // Example 4 controls
+            document.getElementById('unit-size-4').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-4').textContent = e.target.value;
+                renderExample4();
+                setupHoverInteractions(canvas4, groupRenderer4);
+            });
+            document.getElementById('bar-width-4').addEventListener('input', (e) => {
+                document.getElementById('bar-width-value-4').textContent = e.target.value;
+                renderExample4();
+                setupHoverInteractions(canvas4, groupRenderer4);
+            });
+            
+            // Example 5 controls
+            document.getElementById('unit-size-5').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-5').textContent = e.target.value;
+                renderExample5();
+                setupHoverInteractions(canvas5, groupRenderer5);
+            });
+            document.getElementById('show-circle-5').addEventListener('change', () => {
+                renderExample5();
+                setupHoverInteractions(canvas5, groupRenderer5);
+            });
+            
+            // Example 6 controls
+            document.getElementById('unit-size-6').addEventListener('input', (e) => {
+                document.getElementById('unit-size-value-6').textContent = e.target.value;
+                renderExample6();
+                setupHoverInteractions(canvas6, groupRenderer6);
+            });
+            document.getElementById('layout-6').addEventListener('change', () => {
+                renderExample6();
+                setupHoverInteractions(canvas6, groupRenderer6);
+            });
+            document.getElementById('density-6').addEventListener('input', (e) => {
+                document.getElementById('density-value-6').textContent = e.target.value;
+                renderExample6();
+                setupHoverInteractions(canvas6, groupRenderer6);
+            });
+        }
+        
+        /**
+         * 设置canvas的hover交互和双击交互
+         */
+        function setupHoverInteractions(canvas, renderer) {
+            // 移除旧的事件监听器（如果存在）
+            const oldMousemove = canvas._mousemoveHandler;
+            const oldMouseleave = canvas._mouseleaveHandler;
+            const oldClick = canvas._clickHandler;
+            if (oldMousemove) canvas.removeEventListener('mousemove', oldMousemove);
+            if (oldMouseleave) canvas.removeEventListener('mouseleave', oldMouseleave);
+            if (oldClick) canvas.removeEventListener('click', oldClick);
+            
+            // 创建新的事件处理器
+            const mousemoveHandler = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                renderer.checkGlyphHover(x, y);
+            };
+            
+            const mouseleaveHandler = () => {
+                renderer.hideTooltip();
+            };
+            
+            // 单击事件：让glyph跳跃
+            const clickHandler = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // 单击就跳跃
+                renderer.handleDoubleClick(x, y);
+            };
+            
+            // 保存引用以便后续移除
+            canvas._mousemoveHandler = mousemoveHandler;
+            canvas._mouseleaveHandler = mouseleaveHandler;
+            canvas._clickHandler = clickHandler;
+            
+            // 添加事件监听器
+            canvas.addEventListener('mousemove', mousemoveHandler);
+            canvas.addEventListener('mouseleave', mouseleaveHandler);
+            canvas.addEventListener('click', clickHandler); // 单击就跳跃
+        }
+        
+        // Start loading
+        loadAndRender();
+    </script>
+</body>
+</html>
+
