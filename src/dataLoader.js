@@ -4,10 +4,13 @@
 
 export class DataLoader {
     async load() {
-        // 从processed_embeddings目录加载数据
+        // 从data目录或processed_embeddings目录加载数据
         // 尝试多个可能的路径（因为文件可能在不同的相对位置）
         const possiblePaths = [
-            // 从 visualization/ 目录访问
+            // 从项目根目录的data文件夹（用于部署）
+            './data/sample_participants.json',
+            './data/all_participants.json',
+            // 从 visualization/ 目录访问（本地开发）
             '../processed_embeddings/sample_participants.json',
             '../processed_embeddings/all_participants.json',
             // 从 visualization/examples/ 目录访问
